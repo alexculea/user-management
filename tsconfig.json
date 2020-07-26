@@ -10,6 +10,14 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true
+    "incremental": true,
+    "paths": {
+      "@app/models/*": ["src/models/*"],
+      "@app/models": ["src/models/index"],
+      "@app/controllers/*": ["src/controllers/*"],
+      "@app/controllers": ["src/controllers/index"],
+      "@app/services/*": ["src/services/*"],
+      "@app/services": ["src/services/index"],
+    }
   }
 }
