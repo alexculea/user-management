@@ -12,6 +12,10 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) {}
 
+  getAll(): Promise<User[]> {
+    return this.usersRepository.createQueryBuilder('users').getMany();
+  }
+
   findOneBy(parameters: Partial<User>): Promise<User> {
     return this.usersRepository.findOne(parameters);
   }
@@ -39,7 +43,7 @@ export class UserService {
     return this.usersRepository.create(user);
   }
 
-  deleteOneByUsername(user: Pick<User, 'username'>) {
+  deleteOneById(user: Pick<User, 'id'>) {
     return this.usersRepository.delete(user);
   }
 }

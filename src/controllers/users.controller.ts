@@ -1,27 +1,12 @@
-import { Controller, Get, Post, UsePipes, ValidationPipe, Body, ForbiddenException} from '@nestjs/common';
+import { Controller, Get, Post, UsePipes, ValidationPipe, Body, ForbiddenException, UseGuards, Put, Delete} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from '@app/services';
 import { User } from '@app/models';
-import { userInfo } from 'os';
+import { AuthGuard, PermissionGuard } from '@app/guards';
 
 type LoginUser = Omit<User, 'password' | 'hashPassword'> & { accessToken: string};
-
 const defaultPipeOptions = { whitelist: true };
-const mockUser = {
-  email: 'hello@world.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  username: 'john.doe',
-  isActive: true,
-  permissions: 'readonly',
-  phone: '+1 234 567 8950',
-  department: {
-    id: 0,
-    isActive: true,
-    name: 'Accountants',
-  }
-};
 
 @Controller('v1/users')
 export class UsersController {
@@ -33,13 +18,47 @@ export class UsersController {
   @Post('auth')
   @UsePipes(new ValidationPipe({...defaultPipeOptions, groups: ["auth"]  }))
   async auth(@Body() clientAuth: User): Promise<LoginUser> {
-    if (clientAuth.username === 'john.doe' && clientAuth.password === 'pass') {
+    const user = await this.userService.findOneByAuth(clientAuth)
+    if (user) {
       return {
-        ...mockUser,
+        ...user,
         accessToken: this.jwtService.sign({ user_id: 1 }) 
       };
     } else {
       throw new ForbiddenException();
     }    
+  }
+
+  @Get()
+  @UseGuards(AuthGuard)
+  @UseGuards(new PermissionGuard("readOnly"))
+  @UsePipes(new ValidationPipe({...defaultPipeOptions, groups: ["auth"]  }))
+  async getUsers(): Promise<User[]> {
+    return this.userService.getAll();
+  }
+
+  @Post()
+  @UseGuards(AuthGuard)
+  @UseGuards(new PermissionGuard("update"))
+  @UsePipes(new ValidationPipe({...defaultPipeOptions, groups: ["create"]  }))
+  async create(@Body() newUser: User): Promise<User> {
+    return this.userService.create(newUser)
+  }
+
+
+  @Put()
+  @UseGuards(AuthGuard)
+  @UseGuards(new PermissionGuard("update"))
+  @UsePipes(new ValidationPipe({...defaultPipeOptions, groups: ["create"]  }))
+  async update(@Body() updatedUser: User): Promise<User> {
+    return this.userService.create(updatedUser)
+  }
+
+  @Delete()
+  @UseGuards(AuthGuard)
+  @UseGuards(new PermissionGuard("update"))
+  @UsePipes(new ValidationPipe({...defaultPipeOptions, groups: ["create"]  }))
+  async delete(@Body() user: Pick<User, 'id'>) {
+    return this.userService.deleteOneById(user);
   }
 }

@@ -18,6 +18,8 @@
       "@app/controllers": ["src/controllers/index"],
       "@app/services/*": ["src/services/*"],
       "@app/services": ["src/services/index"],
+      "@app/guards/*": ["src/guards/*"],
+      "@app/guards": ["src/guards/index"],
     }
   }
 }
